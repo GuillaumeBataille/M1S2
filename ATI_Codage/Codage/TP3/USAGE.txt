@@ -1,0 +1,7 @@
+tout le tp est dans le main, t'as juste a mettre "nonDeLimage.pgm" en argument. Sans le ./in
+
+GNUPLOT:
+	plot "histo.dat" with lines
+
+Huffman: (il est en .exe donc pour les foutus linuxiens faut recompiler)
+	./huffman c source destination

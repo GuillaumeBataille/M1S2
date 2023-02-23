@@ -1,0 +1,13 @@
+Comme toi :
+g++ main.cpp -o exe && ./exe img.ppm seuil
+
+Faut spécifier le nom de la map de verité dans le main de façon crado 
+
+pour le gnuplot pour afficer la courbe ROC c'est : 
+
+"../dat/ROC.dat" using 9:7 with lines
+
+vu que les données sont mises comme ça
+niveau de gris - Vrai pos - Faux pos - Vrai neg - Faux neg - Somme des pos/neg - Sensibilité -Specificité - (1-Specificite)
+
+

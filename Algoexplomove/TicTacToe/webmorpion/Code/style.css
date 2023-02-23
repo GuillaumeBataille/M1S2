@@ -1,0 +1,21 @@
+#board {
+  display: flex;
+  flex-wrap: wrap;
+  width: 300px;
+}
+
+#board div {
+  width: calc(100% / var(--size));
+  height: calc(100% / var(--size));
+  border: 1px solid black;
+  font-size: calc(50px / var(--size));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+#board div:hover {
+  background-color: lightgrey;
+  cursor: pointer;
+}

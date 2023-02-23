@@ -1,0 +1,37 @@
+pour l'affichage des profils et des histogrammes
+- installer gnuplot
+- executer le code a plot comme ceci : code > histo.dat
+- lancer gnuplot dans le terminal : gnuplot
+- plot l'histo.dat : plot "histo.dat" with lines
+- si soucis de termnial, configurer le terminal si gnuplot le demande (set terminal)
+
+
+
+test_grey.cpp -> seuille une image pgm avec un seuil donné
+g++ test_grey.cpp -o exe && ./exe in/09.pgm out/09out.pgm SEUILVALUE
+
+
+test_couleur.cpp -> seuille une image ppm avec un seuil donné
+g++ test_couleur.cpp -o exe && ./exe in/lena.ppm out/lenaout.ppm SEUILVALUE
+
+seuils_gris.cpp -> seuille une image pgm avec 1,2 ou 3 seuils en 2,3 ou 4 parties
+g++ seuils_gris.cpp -o exe && ./exe in/09.pgm out/09out.pgm NBRSEUIL(1,2 ou 3) S1 S2 S3 (selon le nombre de seuil requis)
+
+seuils_couleur -> seuille une image ppm avec 3 seuil SR, SG et SB
+g++ seuils_couleur.cpp -o exe && ./exe in/lena.ppm out/lenaout.ppm SR SG SB
+
+
+profil.cpp -> recupère le profil (ligne ou colonne) d'une image pgm via un indice donné
+g++ profil.cpp -o exe && ./exe in/09.pgm c(ou l pour ligne) indice
+
+histo_grey.cpp -> recupère l'histogramme d'une image pgm 
+g++ histo_grey.cpp -o exe && ./exe in/09.pgm 
+
+histo_rgb.cpp -> recupère 3 histo (un pour chaque composante) d'une image ppm
+g++ histo_color -o exe && ./exe in/lena.pgm 
+(pour plot de façon propre celui la faire ça dans gnuplot
+plot "histo_rgb.dat" using 1:2 lt rgb "red" with lines title "red","histo_rgb.dat" using 1:3 lt rgb "green" with lines title "green","histo_rgb.dat" using 1:4 lt rgb "blue" with lines title "blue"
+)
+
+seuil_auto_otsu.cpp -> calcule un seuil automatiquement via algorithme d'otsu et seuille une image pgm avec
+g++ seuil_auto_otsu.cpmm -o exe && ./exe in/09.pgm out/09out_otsu.pgm  

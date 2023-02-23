@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tic Tac Toe</title>
+	<style>
+		table {
+			border-collapse: collapse;
+			margin: auto;
+		}
+        td {
+		width: 50px;
+		height: 50px;
+		border: 1px solid black;
+		text-align: center;
+		font-size: 30px;
+	}.player1 {
+	color: blue;
+}
+
+.player2 {
+	color: red;
+}
+
+.win {
+	background-color: yellow;
+}
+</style>
+</head>
+<body>
+	<h1>Tic Tac Toe</h1>
+	<label for="size">Choose the size of the board:</label>
+	<input type="number" id="size" name="size">
+	<label for="mode">Choose game mode:</label>
+	<select id="mode" name="mode">
+		<option value="human">Human vs. Human</option>
+		<option value="ai">Human vs. AI</option>
+	</select>
+	<button onclick="start()">Start Game</button>
+	<table id="board"></table>
+    <script>
+        let board = [];
+        let size = 0;
+        let currentPlayer = "player1";
+        let moves = 0;
+        let mode = "";
+        let aiPlayer;
+        let humanPlayer;
+		function start() {
+        size = document.getElementById("size").value;
+        mode = document.getElementById("mode").value;
+        if (size < 3) {
+            alert("Minimum board size is 3x3.");
+            return;
+        }
+        createBoard(size);
+        document.getElementById("size").disabled = true;
+        document.getElementById("mode").disabled = true;
+        document.getElementsByTagName("button")[0].disabled = true;
+        if (mode === "ai") {
+            if (Math.random() > 0.5) {
+                humanPlayer = "player1";
+                aiPlayer = "player2";
+                setTimeout(aiMove, 1000);
+            } else {
+                humanPlayer = "player2";
+                aiPlayer = "player1";
+            }
+            currentPlayer = humanPlayer;
+        }
+    }
+
+    function createBoard(size) {
+        let table = document.getElementById("board");
+        for (let i = 0; i < size; i++) {
+            let row = document.createElement("tr");
+            board.push([]);
+            for (let j = 0; j < size; j++) {
+                let cell = document.createElement("td");
+                cell.setAttribute("id", i + "-" + j);
+                if (mode === "human") {
+                    cell.setAttribute("onclick", "move(this)");
+                }
+                row.appendChild(cell);
+                board[i].push("");
+            }
+            table.appendChild(row);
+        }
+    }
+
+    function move(cell) {
+        if (cell.innerHTML !== "") {
+            alert("Cell already taken.");
+            return;
+        }
+        cell.classList.add(currentPlayer);
+        cell.innerHTML = currentPlayer === "player1" ? "X" : "O";
+        let id = cell.getAttribute("id").split("-");
+        board[id[0]][id[1]] = currentPlayer;
+        moves++;
+        checkWin(id[0], id[1]);
+        if (currentPlayer === humanPlayer) {
+            currentPlayer = aiPlayer;
+            setTimeout(aiMove, 1000);
+        } else {
+            currentPlayer = humanPlayer;
+        }
+        if (moves === size * size) {
+            alert("It's a tie!");
+            reset();
+        }
+    }
+	function aiMove() {
+let bestScore = -Infinity;
+let move;
+for (let i = 0; i < size; i++) {
+for (let j = 0; j < size; j++) {
+if (board[i][j] === "") {
+board[i][j] = currentPlayer;
+let score = minimax(board, 0, false);
+board[i][j] = "";
+if (score > bestScore) {
+bestScore = score;
+move = { i, j };
+}
+}
+}
+}
+let cell = document.getElementById(move.i + "-" + move.j);
+cell.classList.add(currentPlayer);
+cell.innerHTML = currentPlayer === "player1" ? "X" : "O";
+board[move.i][move.j] = currentPlayer;
+moves++;
+checkWin(move.i, move.j);
+currentPlayer = "player1";
+if (moves === size * size) {
+alert("It's a tie!");
+reset();
+}
+}
+function minimax(board, depth, isMaximizing) {
+	let result = checkWinner();
+	if (result !== null) {
+		return result;
+	}
+	if (isMaximizing) {
+		let bestScore = -Infinity;
+		for (let i = 0; i < size; i++) {
+			for (let j = 0; j < size; j++) {
+				if (board[i][j] === "") {
+					board[i][j] = "player2";
+					let score = minimax(board, depth + 1, false);
+					board[i][j] = "";
+					bestScore = Math.max(score, bestScore);
+				}
+			}
+		}
+		return bestScore;
+	} else {
+		let bestScore = Infinity;
+		for (let i = 0; i < size; i++) {
+			for (let j = 0; j < size; j++) {
+				if (board[i][j] === "") {
+					board[i][j] = "player1";
+					let score = minimax(board, depth + 1, true);
+					board[i][j] = "";
+					bestScore = Math.min(score, bestScore);
+				}
+			}
+		}
+		return bestScore;
+	}
+}
+
+function checkWinner() {
+	let winner = null;
+	for (let i = 0; i < size; i++) {
+		for (let j = 0; j < size; j++) {
+			if (board[i][j] === "") {
+				continue;
+			}
+			if (checkRow(i, j) || checkColumn(i, j) || checkDiagonal(i, j) || checkAntiDiagonal(i, j)) {
+				winner = board[i][j];
+				break;
+			}
+		}
+		if (winner !== null) {
+			break;
+		}
+	}
+	if (winner === null && moves === size * size) {
+		return 0;
+	} else if (winner === "player1") {
+		return -1;
+	} else if (winner === "player2") {
+		return 1;
+	}
+	return null;
+}
+
+function checkRow(row, col) {
+	let player = board[row][col];
+	for (let j = 0; j < size; j++) {
+		if (board[row][j] !== player) {
+			return false;
+		}
+	}
+	return true;
+}
+
+function checkColumn(row, col) {
+let player = board[row][col];
+let win = true;
+for (let i = 0; i < size; i++) {
+if (board[i][col] !== player) {
+win = false;
+break;
+}
+}
+if (win) {
+endGame(player);
+return;
+}
+checkDiagonal(row, col);
+}
+function checkDiagonal(row, col) {
+    if (row === col) {
+        let player = board[row][col];
+        let win = true;
+        for (let i = 0; i < size; i++) {
+            if (board[i][i] !== player) {
+                win = false;
+                break;
+            }
+        }
+        if (win) {
+            endGame(player);
+            return;
+        }
+    }
+    checkAntiDiagonal(row, col);
+}
+
+function checkAntiDiagonal(row, col) {
+    if (row + col === size - 1) {
+        let player = board[row][col];
+        let win = true;
+        for (let i = 0; i < size; i++) {
+            if (board[i][size - i - 1] !== player) {
+                win = false;
+                break;
+            }
+        }
+        if (win) {
+            endGame(player);
+            return;
+        }
+    }
+}
+
+function endGame(player) {
+    let cells = document.getElementsByTagName("td");
+    for (let i = 0; i < cells.length; i++) {
+        cells[i].removeAttribute("onclick");
+    }
+    alert("Player " + player + " wins!");
+    reset();
+}
+
+function reset() {
+    board = [];
+    size = 0;
+    currentPlayer = "player1";
+    moves = 0;
+    mode = "";
+    document.getElementById("size").value = "";
+    document.getElementById("mode").value = "";
+    document.getElementById("size").disabled = false;
+    document.getElementById("mode").disabled = false;
+    document.getElementsByTagName("button")[0].disabled = false;
+    let table = document.getElementById("board");
+    while (table.firstChild) {
+        table.removeChild(table.firstChild);
+    }
+}
+
+function aiMove() {
+    let move = findBestMove();
+    let cell = document.getElementById(move.row + "-" + move.col);
+    cell.classList.add(currentPlayer);
+    cell.innerHTML = currentPlayer === "player1" ? "X" : "O";
+    board[move.row][move.col] = currentPlayer;
+    moves++;
+    checkWin(move.row, move.col);
+    currentPlayer = "player1";
+    if (moves === size * size) {
+        alert("It's a tie!");
+        reset();
+    }
+}
+
+function findBestMove() {
+    let bestVal = -Infinity;
+    let bestMove = {};
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            if (board[i][j] === "") {
+                board[i][j] = currentPlayer;
+                let val = minimax(0, false, -Infinity, Infinity);
+                board[i][j] = "";
+                if (val > bestVal) {
+                    bestMove.row = i;
+                    bestMove.col = j;
+                    bestVal = val;
+                }
+            }
+        }
+    }
+    return bestMove;
+}
+
+function minimax(depth, isMaximizingPlayer, alpha, beta) {
+// base case
+let result = checkWinCondition();
+if (result !== null) {
+if (result === "tie") {
+return 0;
+} else if (result === "player1") {
+return -10 + depth;
+} else {
+return 10 - depth;
+}
+}
+if (isMaximizingPlayer) {
+            let bestScore = -Infinity;
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (board[i][j] === "") {
+                        board[i][j] = "player2";
+                        moves++;
+                        let score = minimax(depth + 1, false, alpha, beta);
+                        board[i][j] = "";
+                        moves--;
+                        bestScore = Math.max(score, bestScore);
+                        alpha = Math.max(alpha, score);
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return bestScore;
+        } else {
+            let bestScore = Infinity;
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    if (board[i][j] === "") {
+                        board[i][j] = "player1";
+                        moves++;
+                        let score = minimax(depth + 1, true, alpha, beta);
+                        board[i][j] = "";
+                        moves--;
+                        bestScore = Math.min(score, bestScore);
+                        beta = Math.min(beta, score);
+                        if (beta <= alpha) {
+                            break;
+                        }
+                    }
+                }
+            }
+            return bestScore;
+        }
+    }
+
+    function aiMove() {
+        let bestScore = -Infinity;
+        let row, col;
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (board[i][j] === "") {
+                    board[i][j] = "player2";
+                    moves++;
+                    let score = minimax(0, false, -Infinity, Infinity);
+                    board[i][j] = "";
+                    moves--;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        row = i;
+                        col = j;
+                    }
+                }
+            }
+        }
+        let cell = document.getElementById(row + "-" + col);
+        cell.classList.add(currentPlayer);
+        cell.innerHTML = currentPlayer === "player1" ? "X" : "O";
+        board[row][col] = currentPlayer;
+        moves++;
+        checkWin(row, col);
+        currentPlayer = "player1";
+        if (moves === size * size) {
+            alert("It's a tie!");
+            reset();
+        }
+    }
+
+	function checkWinCondition() {
+let winner = getWinner();
+if (winner === "player1") {
+endGame("Player 1 wins!");
+} else if (winner === "player2") {
+endGame("Player 2 wins!");
+} else if (moves === size * size) {
+endGame("It's a tie!");
+} else {
+if (currentPlayer === "player1") {
+currentPlayer = "player2";
+if (mode === "ai") {
+setTimeout(aiMove, 1000);
+}
+} else {
+currentPlayer = "player1";
+}
+}
+}
+function getWinner() {
+        for (let i = 0; i < size; i++) {
+            // check row
+            if (board[i].every(cell => cell === "player1")) {
+                return "player1";
+            } else if (board[i].every(cell => cell === "player2")) {
+                return "player2";
+            }
+
+            // check column
+            let column = [];
+            for (let j = 0; j < size; j++) {
+                column.push(board[j][i]);
+            }
+            if (column.every(cell => cell === "player1")) {
+                return "player1";
+            } else if (column.every(cell => cell === "player2")) {
+                return "player2";
+            }
+        }
+
+        // check diagonal
+        let diagonal = [];
+        for (let i = 0; i < size; i++) {
+            diagonal.push(board[i][i]);
+        }
+        if (diagonal.every(cell => cell === "player1")) {
+            return "player1";
+        } else if (diagonal.every(cell => cell === "player2")) {
+            return "player2";
+        }
+
+        // check anti-diagonal
+        diagonal = [];
+        for (let i = 0; i < size; i++) {
+            diagonal.push(board[i][size - i - 1]);
+        }
+        if (diagonal.every(cell => cell === "player1")) {
+            return "player1";
+        } else if (diagonal.every(cell => cell === "player2")) {
+            return "player2";
+        }
+
+        return "";
+    }
+
+    function endGame(message) {
+        alert(message);
+        reset();
+    }
+
+    function reset() {
+        board = [];
+        currentPlayer = "player1";
+        moves = 0;
+        let table = document.getElementById("board");
+        while (table.firstChild) {
+            table.removeChild(table.firstChild);
+        }
+        document.getElementById("size").disabled = false;
+        document.getElementById("mode").disabled = false;
+        document.getElementsByTagName("button")[0].disabled = false;
+    }
+</script>
+</body>
+</html>

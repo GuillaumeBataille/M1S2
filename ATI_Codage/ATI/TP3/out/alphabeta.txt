@@ -1,0 +1,47 @@
+
+//-----------------------black------------------------------
+Rouge: 
+Borne min a0 :0
+Borne min a1 :13
+Valeur du coefficient alpha -> 0
+Valeur du coefficient beta -> 19
+
+
+Vert:
+Borne min a0 :0
+Borne min a1 :12
+Valeur du coefficient alpha -> 0
+Valeur du coefficient beta -> 21
+
+Bleu:
+
+Borne min a0 :0
+Borne min a1 :12
+Valeur du coefficient alpha -> 0
+Valeur du coefficient beta -> 21
+
+
+//---------------------bibe-------------------------------------
+
+Rouge:
+
+Borne min a0 :55
+Borne min a1 :200
+Valeur du coefficient alpha -> -96
+Valeur du coefficient beta -> 1
+
+
+Vert:
+
+Borne min a0 :60
+Borne min a1 :210
+Valeur du coefficient alpha -> -102
+Valeur du coefficient beta -> 1
+  
+
+Bleu:
+                                                                                                                                                                                                                                                                              
+Borne min a0 :50
+Borne min a1 :180
+Valeur du coefficient alpha -> -98
+Valeur du coefficient beta -> 1
