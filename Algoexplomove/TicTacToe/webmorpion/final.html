@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tic Tac Toe</title>
+	<style>
+		table {
+			border-collapse: collapse;
+			margin: auto;
+		}
+        td {
+		width: 50px;
+		height: 50px;
+		border: 1px solid black;
+		text-align: center;
+		font-size: 30px;
+	}
+
+	.player1 {
+		color: blue;
+	}
+
+	.player2 {
+		color: red;
+	}
+
+	.win {
+		background-color: yellow;
+	}
+</style>
+</head>
+<body>
+	<h1>Tic Tac Toe</h1>
+	<label for="size">Choose the size of the board:</label>
+	<input type="number" id="size" name="size">
+	<label for="mode">Choose game mode:</label>
+	<select id="mode" name="mode">
+		<option value="human">Human vs. Human</option>
+		<option value="ai">Human vs. AI</option>
+	</select>
+	<label for="depth">Choose the depth of the minimax algorithm:</label>
+<input type="number" id="depth" name="depth" value="2">
+	<button onclick="start()">Start Game</button>
+	<table id="board"></table>
+    <script>
+let board = [];
+let size = 0;
+let currentPlayer = "player1";
+let moves = 0;
+let mode = "";
+let depth = 2; // Ajout de la variable depth
+
+function start() {
+    size = document.getElementById("size").value;
+    mode = document.getElementById("mode").value;
+    depth = document.getElementById("depth").value; // Récupération de la valeur du champ "depth"
+    if (size < 3) {
+        alert("Minimum board size is 3x3.");
+        return;
+    }
+    createBoard(size);
+    document.getElementById("size").disabled = true;
+    document.getElementById("mode").disabled = true;
+    document.getElementById("depth").disabled = true; // Désactiver le champ "depth" une fois le jeu démarré
+    document.getElementsByTagName("button")[0].disabled = true;
+}
+    
+        function createBoard(size) {
+            let table = document.getElementById("board");
+            for (let i = 0; i < size; i++) {
+                let row = document.createElement("tr");
+                board.push([]);
+                for (let j = 0; j < size; j++) {
+                    let cell = document.createElement("td");
+                    cell.setAttribute("id", i + "-" + j);
+                    if (mode === "human") {
+                        cell.setAttribute("onclick", "move(this)");
+                    } else {
+                        cell.addEventListener("click", function() {
+                            if (cell.innerHTML !== "") {
+                                return;
+                            }
+                            cell.classList.add(currentPlayer);
+                            cell.innerHTML = currentPlayer === "player1" ? "X" : "O";
+                            let id = cell.getAttribute("id").split("-");
+                            board[id[0]][id[1]] = currentPlayer;
+                            moves++;
+                            checkWin(id[0], id[1]);
+                            if (currentPlayer === "player1") {
+                                currentPlayer = "player2";
+                                setTimeout(aiMove, 100);
+                                //aiMove;
+                            } else {
+                                currentPlayer = "player1";
+                            }
+                            if (moves === size * size) {
+                                alert("It's a tie!");
+                                reset();
+                            }
+                        });
+                    }
+                    row.appendChild(cell);
+                    board[i].push("");
+                }
+                table.appendChild(row);
+            }
+        }
+    
+        function move(cell) {
+            if (cell.innerHTML !== "") {
+                alert("Cell already taken.");
+                return;
+            }
+            cell.classList.add(currentPlayer);
+            cell.innerHTML = currentPlayer === "player1" ? "X" : "O";
+            let id = cell.getAttribute("id").split("-");
+            board[id[0]][id[1]] = currentPlayer;
+            moves++;
+            checkWin(id[0], id[1]);
+            if (currentPlayer === "player1") {
+                currentPlayer = "player2";
+} else {
+currentPlayer = "player1";
+}
+if (moves === size * size) {
+alert("It's a tie!");
+reset();
+}
+}
+//---------------------IA MOVEMENT --------------------//
+function minimax(state, depth, player) {
+	var best;
+
+	if (player == COMP) {
+		best = [-1, -1, -1000];
+	}
+	else {
+		best = [-1, -1, +1000];
+	}
+
+	if (depth == 0 || gameOverAll(state)) {
+		var score = evalute(state);
+		return [-1, -1, score];
+	}
+
+	emptyCells(state).forEach(function (cell) {
+		var x = cell[0];
+		var y = cell[1];
+		state[x][y] = player;
+		var score = minimax(state, depth - 1, -player);
+		state[x][y] = 0;
+		score[0] = x;
+		score[1] = y;
+
+		if (player == COMP) {
+			if (score[2] > best[2])
+				best = score;
+		}
+		else {
+			if (score[2] < best[2])
+				best = score;
+		}
+	});
+
+	return best;
+}
+
+/* It calls the minimax function */
+function aiMove() {
+	var x, y;
+	var move;
+	var cell;
+
+
+	{
+		move = minimax(board, emptyCells(board).length, COMP);
+		x = move[0];
+		y = move[1];
+	}
+
+	if (setMove(x, y, COMP)) {
+		cell = document.getElementById(String(x) + String(y));
+		cell.innerHTML = "O";
+	}
+}
+
+
+
+	function checkWin(row, col) {
+		let player = board[row][col];
+		let win = false;
+
+		// check row
+		win = true;
+		for (let j = 0; j < size; j++) {
+			if (board[row][j] !== player) {
+				win = false;
+				break;
+			}
+		}
+		if (win) {
+			endGame(player);
+			return;
+		}
+
+		// check column
+		win = true;
+		for (let i = 0; i < size; i++) {
+			if (board[i][col] !== player) {
+				win = false;
+				break;
+			}
+		}
+		if (win) {
+			endGame(player);
+			return;
+		}
+
+		// check diagonal
+		if (row === col) {
+			win = true;
+			for (let i = 0; i < size; i++) {
+				if (board[i][i] !== player) {
+					win = false;
+					break;
+				}
+			}
+			if (win) {
+				endGame(player);
+				return;
+			}
+		}
+
+		// check anti-diagonal
+		if (parseInt(row) + parseInt(col) === size - 1) {
+			win = true;
+			for (let i = 0; i < size; i++) {
+				if (board[i][(size - 1) - i] !== player) {
+					win = false;
+					break;
+				}
+			}
+			if (win) {
+				endGame(player);
+				return;
+			}
+		}
+	}
+
+	function endGame(player) {
+		alert("Player " + player + " wins!");
+		let cells = document.getElementsByTagName("td");
+		for (let i = 0; i < cells.length; i++) {
+			if (cells[i].innerHTML === "") {
+				if (mode === "human") {
+					cells[i].setAttribute("onclick", "move(this)");
+				} else {
+					cells[i].removeEventListener("click", aiMove);
+				}
+			} else {
+				cells[i].classList.add("win");
+			}
+		}
+		reset();
+	}
+
+	function reset() {
+		board = [];
+		size = 0;
+		currentPlayer = "player1";
+		moves = 0;
+		document.getElementById("board").innerHTML = "";
+		document.getElementById("size").disabled = false;
+		document.getElementById("mode").disabled = false;
+		document.getElementsByTagName("button")[0].disabled = false;
+	}
+</script>
+</body>
+</html>

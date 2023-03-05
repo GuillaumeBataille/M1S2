@@ -1,0 +1,22 @@
+3 fichiers: 
+input.cpp qui gère les input
+variable.cpp qui stocke les variable globales du projet
+function.cpp qui contient les fonctions hors main 
+TP1.cpp qui rappatrie tout et qui continent le main, il gère les texture loading et l'envoi des buffers au shaders + draw
+
+Si certains include (notamment les common/) sont indentés en rouge 
+-> aller dans build et faire cmake .. 
+
+Pour exec le code : 
+-> aller dans build : clear && make -j && ./launch-TP1.sh
+
+Controls:  
+Z et S : zoom in/out 
+Fleches directionnelles : Bouger la camera
+O : Active le mode de vue Orbite (Avec I et K pour accélerer/ralentir la rotation)
+P : Active le mode de vue Stationnaire
+W : Active le mode de rendu wireframe (Line)
+X : Active le mode de rendu Fill
++ et - : Augmente la résolution du plane
+
+Deux normal map existante : HM1 et HM2 (à changer manuellement dans TP1.cpp pour l'instant car on a pas la gestion de scène TP3) 

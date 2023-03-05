@@ -1,0 +1,15 @@
+Comme toi :
+g++ main.cpp -o exe && ./exe img.ppm seuil (seuil de l'exo 1)
+
+L'exercice 1 : 
+Definir le type (ligne/colonne) et l'id de la ligne/colonne à target (par défaut j'ai mis type ligne et id ligne = la ligne du milieu)
+
+L'exercice 3 : 
+Les seuil bas et haut sont a definir manuellement
+
+L'exercice 7 : 
+Les seuil bas et haut sont a definir manuellement
+
+pour le gnuplot c'est un simple 
+plot "../dat/profil.dat" with lines
+
