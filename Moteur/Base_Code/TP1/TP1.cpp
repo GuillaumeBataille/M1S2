@@ -98,18 +98,14 @@ int main(void)
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders("vertex_shader.glsl", "fragment_shader.glsl");
     glUseProgram(programID);
-    /*****************TODO***********************/
-    // Get a handle for our "Model View Projection" matrices uniforms
 
-    /****************************************/
- initPlane(indices, triangles, indexed_vertices, uv,resolution, SIZE, randomheight); // Initiation du plan
- computeNormals(indexed_vertices,indices,normals);
- computeUV(uv,resolution);
- targetCameraPlan(indexed_vertices);
     //---------------------Loading textures and heightmap --------------------//
     
-    glActiveTexture(GL_TEXTURE0);
-    loadBMP_custom("../textures/HM2.bmp");
+        glActiveTexture(GL_TEXTURE0);
+    
+    loadBMP_custom("../textures/HM1.bmp");
+    //loadBMP_custom("../textures/HM2.bmp");
+    //loadBMP_custom("../textures/HM3.bmp");
     glUniform1i(glGetUniformLocation(programID, "texture0"), 0);
     
     glActiveTexture(GL_TEXTURE1);
@@ -124,6 +120,7 @@ int main(void)
     loadBMP_custom("../textures/snowrock.bmp");
     glUniform1i(glGetUniformLocation(programID, "texture3"), 3);
     
+
 
 
     //Créer mes buffers 

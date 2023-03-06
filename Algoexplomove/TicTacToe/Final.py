@@ -1,175 +1,124 @@
-import math
-import random
+#This function is used to draw the board's current state every time the user turn arrives. 
+def ConstBoard(board):
+    print("Current State Of Board : \n\n");
+    for i in range (0,16):
+        if((i>0) and (i%4)==0):
+            print("\n");
+        if(board[i]==0):
+            print("- ",end=" ");
+        if (board[i]==1):
+            print("O ",end=" ");
+        if(board[i]==-1):    
+            print("X ",end=" ");
+    print("\n\n");
 
-# Define the player classes
-class Player:
-    def __init__(self, letter):
-        self.letter = letter
+#This function takes the user move as input and make the required changes on the board.
+def User1Turn(board):
+    pos=int(input("Enter X's position from [1...16]: "));
+    if(board[pos-1]!=0):
+        print("Wrong Move!!!");
+        exit(0) ;
+    board[pos-1]=-1;
 
-    # Get the player's move
-    def get_move(self, game):
-        pass
+def User2Turn(board):
+    pos=int(input("Enter O's position from [1...16]: "));
+    if(board[pos-1]!=0):
+        print("Wrong Move!!!");
+        exit(0);
+    board[pos-1]=1;
 
-# Human player
-class HumanPlayer(Player):
-    def __init__(self, letter):
-        super().__init__(letter)
+#MinMax function.
+# MinMax function with depthmax parameter.
+def minimax(board, player, depth, depthmax):
+    x = analyzeboard(board)
+    if x != 0 or depth == depthmax:
+        return (x * player)
+    pos = -1
+    value = -2
+    for i in range(0, 16):
+        if board[i] == 0:
+            board[i] = player
+            score = -minimax(board, (player * -1), depth + 1, depthmax)
+            board[i] = 0
+            if score > value:
+                value = score
+                pos = i
+    if pos == -1:
+        return 0
+    return value
 
-    def get_move(self, game):
-        valid_square = False
-        val = None
-        while not valid_square:
-            square = input(self.letter + '\'s turn. Enter a square (0-' + str(game.num_squares - 1) + ') to place ' + self.letter + ' in: ')
-            try:
-                val = int(square)
-                if val not in game.available_moves():
-                    raise ValueError
-                valid_square = True
-            except ValueError:
-                print('Invalid square. Try again.')
-        return val
+# This function makes the computer's move using minmax algorithm.
+def CompTurn(board, depthmax):
+    pos = -1
+    value = -2
+    for i in range(0, 16):
+        if board[i] == 0:
+            board[i] = 1
+            score = -minimax(board, -1, 0, depthmax)
+            board[i] = 0
+            if score > value:
+                value = score
+                pos = i
+    board[pos] = 1
 
-# AI player
-class AIPlayer(Player):
-    def __init__(self, letter, depth):
-        super().__init__(letter)
-        self.depth = depth
 
-    def get_move(self, game):
-        if len(game.available_moves()) == game.num_squares:
-            square = random.choice(game.available_moves())
+
+#This function is used to analyze a game.
+def analyzeboard(board):
+    cb=[[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15],[0,4,8,12],[1,5,9,13],[2,6,10,14],[3,7,11,15],[0,5,10,15],[3,6,9,12]];
+
+    for i in range(0,10):
+        if(board[cb[i][0]] != 0 and
+           board[cb[i][0]] == board[cb[i][1]] and
+           board[cb[i][0]] == board[cb[i][2]] and
+           board[cb[i][0]] == board[cb[i][3]]):
+            return board[cb[i][3]];
+    return 0;
+
+def main():
+    choice = int(input("Enter 1 for single player, 2 for multiplayer: "))
+    board = [0] * 16
+    player = 1
+
+    if choice == 1:
+        print("Computer: O vs. You: X")
+        player = int(input("Enter to play 1 (X) or 2 (O): "))
+        if player == 1:
+            depthmax = int(input("Enter the depthmax parameter (e.g. 2): "))
         else:
-            _, square = self.minimax(game, self.depth, True)
-        return square
+            depthmax = float('inf')
 
-    def minimax(self, game, depth, max_player):
-        if game.current_winner == self.letter:
-            return (1, None)
-        elif game.current_winner == game.other_player(self.letter):
-            return (-1, None)
-        elif len(game.available_moves()) == 0:
-            return (0, None)
-        elif depth == 0:
-            return (0, None)
+    while True:
+        ConstBoard(board)
 
-        if max_player:
-            max_eval = -math.inf
-            best_move = None
-            for move in game.available_moves():
-                game.make_move(move, self.letter)
-                eval, _ = self.minimax(game, depth-1, False)
-                game.undo_move(move)
-                if eval > max_eval:
-                    max_eval = eval
-                    best_move = move
-            return (max_eval, best_move)
-        else:
-            min_eval = math.inf
-            best_move = None
-            for move in game.available_moves():
-                game.make_move(move, game.other_player(self.letter))
-                eval, _ = self.minimax(game, depth-1, True)
-                game.undo_move(move)
-                if eval < min_eval:
-                    min_eval = eval
-                    best_move = move
-            return (min_eval, best_move)
-
-# Define the Tic Tac Toe game class
-class TicTacToe:
-    def __init__(self, size):
-        self.size = size
-        self.num_squares = size**2
-        self.board = [' ' for _ in range(self.num_squares)]
-        self.current_winner = None
-
-    def print_board(self):
-        for row in [self.board[i*self.size:(i+1)*self.size] for i in range(self.size)]:
-            print('| ' + ' | '.join(row) + ' |')
-
-    def make_move(self, square, letter):
-        if self.board[square] == ' ':
-            self.board[square] = letter
-            if self.winner(square, letter):
-                self.current_winner = letter
-            return True
-        return False
-
-    def winner(self, square, letter):
-        row_index = square // self.size
-        col_index = square % self.size
-
-        # Check row
-        if all([self.board[self.size*row_index+i] == letter for i in range(self.size)]):
-            return True
-
-        # Check column
-        if all([self.board[col_index+self.size*i] == letter for i in range(self.size)]):
-            return True
-
-        # Check diagonal
-        if row_index == col_index:
-            if all([self.board[i*self.size+i] == letter for i in range(self.size)]):
-                return True
-
-        # Check anti-diagonal
-        if row_index + col_index == self.size - 1:
-            if all([self.board[i*self.size+(self.size-1-i)] == letter for i in range(self.size)]):
-                return True
-
-        return False
-
-    def available_moves(self):
-        return [i for i, x in enumerate(self.board) if x == ' ']
-
-    def num_empty_squares(self):
-        return len(self.available_moves())
-
-    def other_player(self, letter):
-        return 'O' if letter == 'X' else 'X'
-        
-    def undo_move(self, square):
-        self.board[square] = ' '
-
-# Define the main function
-def play_game():
-    # Get the game settings from the user
-    print('Welcome to Tic Tac Toe!')
-    size = int(input('Enter the size of the grid: '))
-    ai_enabled = input('Do you want to play against the computer? (y/n) ').lower() == 'y'
-    ai_depth = None
-    if ai_enabled:
-        ai_depth = int(input('Enter the depth for the computer (recommended: 3): '))
-
-    # Create the players
-    p1 = HumanPlayer('X')
-    if ai_enabled:
-        p2 = AIPlayer('O', ai_depth)
-    else:
-        p2 = HumanPlayer('O')
-
-    # Create the game
-    game = TicTacToe(size)
-
-    # Play the game
-    players = [p1, p2]
-    random.shuffle(players)
-    while game.num_empty_squares() > 0 and not game.current_winner:
-        for player in players:
-            square = player.get_move(game)
-            if game.make_move(square, player.letter):
-                print(player.letter + ' makes a move to square ' + str(square))
-                game.print_board()
-                print('')
-                if game.current_winner:
-                    print(player.letter + ' wins!')
-                    return
+        if analyzeboard(board) != 0:
+            if analyzeboard(board) == player:
+                print("Congratulations! You won!")
             else:
-                print('That square is already occupied! Try again.')
+                print("You lost. Better luck next time.")
+            break
 
-    print('It\'s a tie!')
+        if player == 1:
+            User1Turn(board)
+        elif choice == 1:
+            CompTurn(board, depthmax)
+        else:
+            User2Turn(board)
 
-# Call the main function
-if __name__ == '__main__':
-    play_game()
+        if analyzeboard(board) != 0:
+            if analyzeboard(board) == player:
+                ConstBoard(board)
+                print("Congratulations! You won!")
+            else:
+                ConstBoard(board)
+                print("Player", -player, "wins!")
+            break
 
+        player = -player
+
+        if all(board):
+            ConstBoard(board)
+            print("It's a tie!")
+            break
+
+main()

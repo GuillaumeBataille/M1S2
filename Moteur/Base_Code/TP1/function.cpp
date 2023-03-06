@@ -33,9 +33,7 @@ void initPlane(std::vector<unsigned short> &indices, std::vector<std::vector<uns
     indexed_vertices.clear();
     uv.clear();
 
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     int nbVertices = resolution * resolution; // Nombre de sommet au total
-    //std::cout << "nombre de sommet a dessiner :" << nbVertices << std::endl;
     float pas = size / (float)resolution;
     float x = 0, y = 0, z = 0;
 
@@ -44,12 +42,10 @@ void initPlane(std::vector<unsigned short> &indices, std::vector<std::vector<uns
     {
         for (int j = 0; j < resolution + 1; j++)
         {
-           // std::cout << "valeur courante i : " << i << " et j: " << j << std::endl;
             x = j* pas;
             y= randomheight? ( std::max((float) rand() / (RAND_MAX),0.f) ): 0;
             z = i * pas;
-            //std::cout << "vecteur courant = (" << x << "," << y << z <<") et on le recupère dans index_vertices" << std::endl;
-            indexed_vertices.push_back(glm::vec3(x - offset,y-offset, z-offset));
+            indexed_vertices.push_back(glm::vec3(x - size/2.f,y, z-size/2.f));
 
         }
     }
@@ -84,7 +80,7 @@ void computeUV(std::vector<glm::vec2> &uv, int resolution)
     float uv_pas = 1 / (float)resolution;
     for (int i = 0; i < resolution + 1; i++)
     {
-        for (int j = 0; j < resolution + 1; j++)
+        for (int j = 0; j < resolution+ 1; j++)
         {
             float u = j * uv_pas;
             float v = i * uv_pas;

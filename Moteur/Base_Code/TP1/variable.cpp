@@ -13,7 +13,7 @@
 
 //
 #define SIZE 2
-#define offset 1
+
 
 // settings
 const unsigned int SCR_WIDTH = 10000;

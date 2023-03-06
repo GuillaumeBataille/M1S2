@@ -27,18 +27,11 @@ void main(){
 
         // TODO : Output position of the vertex, in clip space : MVP * position
         vec3 pos = vertices_position_modelspace;
-        float height = texture(texture0,textureCoordinates).g;
+        float height = texture(texture0,textureCoordinates).r;
         pos.y += height;
         gl_Position =view_mat * transform_mat * vec4(pos,1);
-        //Compute texture coordinate for fragshader
         TexCoord = textureCoordinates;
         gl_Position = project_mat * gl_Position;
-        //Compute 
-        //normals = normals;
-        //TexCoord = aTexCoord;
-        //texture = texture0;
-        //textureout = texture;
-        //Heightmap min max 
 
 }
 
