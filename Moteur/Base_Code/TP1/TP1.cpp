@@ -19,16 +19,22 @@ GLFWwindow *window;
 
 using namespace glm;
 
-
 #include <common/shader.hpp>
-#include <common/objloader.hpp>
 #include <common/vboindexer.hpp>
+
 #include <common/texture.hpp>
-#include <TP1/input.cpp>
+#include "TP1/input.cpp"
 #include "TP1/function.cpp"
+
+#include "TP1/scenes.cpp"
+
+#include <vector>
+#include <string>
+#include <glm/glm.hpp>
 
 int main(void)
 {
+
     // Initialise GLFW
     if (!glfwInit())
     {
@@ -36,7 +42,6 @@ int main(void)
         getchar();
         return -1;
     }
-
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -69,7 +74,6 @@ int main(void)
     // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // Set up your mouse callback function
 
-
     // Set the mouse at the center of the screen
     glfwPollEvents();
     glfwSetCursorPos(window, 1024 / 2, 768 / 2);
@@ -83,52 +87,50 @@ int main(void)
     glDepthFunc(GL_LESS);
 
     // Cull triangles which normal is not towards the camera
-    //glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
-        GLuint vertexbuffer;
-        GLuint uvbuffer;
-        GLuint elementbuffer;
-        GLuint normalbuffer;
-        GLuint tangentbuffer;
-        GLuint bitangentbuffer;
+    GLuint vertexbuffer;
+    GLuint uvbuffer;
+    GLuint elementbuffer;
+    GLuint normalbuffer;
+    GLuint tangentbuffer;
+    GLuint bitangentbuffer;
 
     // Create and compile our GLSL program from the shaders
     GLuint programID = LoadShaders("vertex_shader.glsl", "fragment_shader.glsl");
     glUseProgram(programID);
 
     //---------------------Loading textures and heightmap --------------------//
-    
-        glActiveTexture(GL_TEXTURE0);
-    
-    loadBMP_custom("../textures/HM1.bmp");
-    //loadBMP_custom("../textures/HM2.bmp");
-    //loadBMP_custom("../textures/HM3.bmp");
+
+    glActiveTexture(GL_TEXTURE0);
+
+    // loadTexture("../textures/png/HMok.bmp");
+    loadTexture("../textures/HM4.bmp");
+    // loadBMP_custom("../textures/HM1.bmp");
+    // loadBMP_custom("../textures/HM3.bmp");
     glUniform1i(glGetUniformLocation(programID, "texture0"), 0);
-    
+
     glActiveTexture(GL_TEXTURE1);
-    loadBMP_custom("../textures/grass.bmp");
+    loadTexture("../textures/grass.bmp");
     glUniform1i(glGetUniformLocation(programID, "texture1"), 1);
-    
+
     glActiveTexture(GL_TEXTURE2);
-    loadBMP_custom("../textures/rock.bmp");
+    loadTexture("../textures/rock.bmp");
     glUniform1i(glGetUniformLocation(programID, "texture2"), 2);
-    
+
     glActiveTexture(GL_TEXTURE3);
-    loadBMP_custom("../textures/snowrock.bmp");
+    loadTexture("../textures/snowrock.bmp");
     glUniform1i(glGetUniformLocation(programID, "texture3"), 3);
-    
 
+    // Créer mes buffers
 
-
-    //Créer mes buffers 
-    
     glGenBuffers(1, &vertexbuffer);
     glGenBuffers(1, &uvbuffer);
     glGenBuffers(1, &elementbuffer);
-    glGenBuffers(1,&normalbuffer);
+    glGenBuffers(1, &normalbuffer);
 
     // Get a handle for our "LightPosition" uniform
     GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
@@ -136,14 +138,14 @@ int main(void)
     // For speed computation
     double lastTime = glfwGetTime();
     int nbFrames = 0;
-   
+
     do
     {
-        //std::cout<<"current resolution : "<< resolution << std::endl;
-        //glfwSetCursorPosCallback(window, mouseCallback);
-        // Measure speed
-        // per-frame time logic
-        // --------------------
+        // std::cout<<"current resolution : "<< resolution << std::endl;
+        // glfwSetCursorPosCallback(window, mouseCallback);
+        //  Measure speed
+        //  per-frame time logic
+        //  --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -156,17 +158,22 @@ int main(void)
 
         // Use our shader
         glUseProgram(programID);
+        // Update scene
+        generateS1()->draw();
 
         // Compute le necessaire pour avoir de quoi charger les buffers
-        initPlane(indices, triangles, indexed_vertices, uv,resolution, SIZE, randomheight); // Initiation du plan
-        computeNormals(indexed_vertices,indices,normals);
-        computeUV(uv,resolution);
+        initPlane(indices, triangles, indexed_vertices, uv, resolution, SIZE, randomheight); // Initiation du plan
+        computeNormals(indexed_vertices, indices, normals);
+        computeUV(uv, resolution);
         targetCameraPlan(indexed_vertices);
 
-        //Envoi des matrices MVP (ici TVP)
-        // Model matrix : an identity matrix (model will be at the origin) then change
-        GLuint id_t = glGetUniformLocation(programID, "transform_mat");
-        glUniformMatrix4fv(id_t, 1, false, &mat_t[0][0]);
+        // loadOFF("../TP1/suzanne.off",indexed_vertices,indices);
+        // Envoi des matrices MVP (ici TVP)
+        //  Model matrix : an identity matrix (model will be at the origin) then change
+        GLuint id_t_Plane = glGetUniformLocation(programID, "transform_mat_plane");
+        GLuint id_t_Mesh = glGetUniformLocation(programID, "transform_mat_mesh");
+        glUniformMatrix4fv(id_t_Plane, 1, false, &mat_t[0][0]);
+        glUniformMatrix4fv(id_t_Mesh, 1, false, &mat_t_m[0][0]);
         // View matrix : camera/view transformation lookat() utiliser camera_position camera_target camera_up
         mat_v = glm::lookAt(camera_position, camera_target, camera_up);
         GLuint id_v = glGetUniformLocation(programID, "view_mat");
@@ -175,9 +182,10 @@ int main(void)
         mat_p = glm::perspective(glm::radians(45.0f), (float)4 / (float)3, 0.1f, 100.0f);
         GLuint id_p = glGetUniformLocation(programID, "project_mat");
         glUniformMatrix4fv(id_p, 1, false, &mat_p[0][0]);
+        GLint isMeshLoc = glGetUniformLocation(programID, "isMesh");
+        glUniform1i(isMeshLoc, false); // Use planet's transformation matrix
 
-
-        // On bind, charge et envoie le contenu du vertexbuffer dans le layout 0 
+        // On bind, charge et envoie le contenu du vertexbuffer dans le layout 0
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
         glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(glm::vec3), &indexed_vertices[0], GL_STATIC_DRAW);
         glVertexAttribPointer(
@@ -188,9 +196,9 @@ int main(void)
             0,        // stride
             (void *)0 // array buffer offset
         );
-        glEnableVertexAttribArray(0);//Activer le layout
+        glEnableVertexAttribArray(0); // Activer le layout
 
-        //On bind, charge et envoie le contenu de l'uvbuffer (pour les textures/heightmap) dans le layout 1
+        // On bind, charge et envoie le contenu de l'uvbuffer (pour les textures/heightmap) dans le layout 1
         glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
         glBufferData(GL_ARRAY_BUFFER, uv.size() * sizeof(glm::vec2), &uv[0], GL_STATIC_DRAW);
         glVertexAttribPointer(
@@ -201,9 +209,9 @@ int main(void)
             0,        // stride
             (void *)0 // array buffer offset
         );
-        glEnableVertexAttribArray(1); //Activer le layout
+        glEnableVertexAttribArray(1); // Activer le layout
 
-        //On bind, charge et envoie le contenu du normalbuffer dans le layout 2 
+        // On bind, charge et envoie le contenu du normalbuffer dans le layout 2
         glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
         glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
         glVertexAttribPointer(
@@ -214,10 +222,9 @@ int main(void)
             0,        // stride
             (void *)0 // array buffer offset
         );
-        glEnableVertexAttribArray(2);//Activer le layout
+        glEnableVertexAttribArray(2); // Activer le layout
 
-
-        //Bind puis Envoi des indices des triangles pour draw les elements
+        // Bind puis Envoi des indices des triangles pour draw les elements
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0], GL_STATIC_DRAW);
         // Draw the triangles !
@@ -228,11 +235,10 @@ int main(void)
             (void *)0          // element array buffer offset
         );
 
-        //Desactiver les layouts après avoir dessiner
+        // Desactiver les layouts après avoir dessiner
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
-        
 
         // Swap buffers
         glfwSwapBuffers(window);
@@ -255,6 +261,3 @@ int main(void)
 
     return 0;
 }
-
-
-

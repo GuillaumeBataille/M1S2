@@ -4,9 +4,13 @@
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o
  ../TP1/function.cpp
  ../TP1/input.cpp
+ ../TP1/mesh.cpp
+ ../TP1/scenes.cpp
  ../TP1/variable.cpp
+ ../common/my_texture.cpp
  ../common/objloader.hpp
  ../common/shader.hpp
+ ../common/stb_image.h
  ../common/texture.hpp
  ../common/vboindexer.hpp
  ../external/glew-1.13.0/include/GL/glew.h

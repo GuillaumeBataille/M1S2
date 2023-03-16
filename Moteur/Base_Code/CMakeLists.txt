@@ -60,6 +60,7 @@ add_executable(TP1
 	common/shader.hpp
 	common/controls.cpp
 	common/controls.hpp
+	common/stb_image.h
 	common/texture.cpp
 	common/texture.hpp
 	common/objloader.cpp

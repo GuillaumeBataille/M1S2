@@ -10,7 +10,9 @@ uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
+uniform bool isMesh;
 
+//uniform vec4 color_M;
 
 void main(){
 // Sample the textures at the current texture coordinate
@@ -31,7 +33,10 @@ vec4 blendedColor = mix(tex1, tex2, weight1);
 blendedColor = mix(blendedColor, tex3, weight2 + weight3);
 
 // Output the final color
+if(isMesh)
+color = vec4(0.3, 0.3,0.5,1) ;
+else
 color = blendedColor;
 //color = vec4(0.2, 0.3,0,1) ;
-//color = tex1;
+//color = tex0;
 }

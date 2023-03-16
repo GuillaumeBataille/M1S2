@@ -1,0 +1,4 @@
+
+g++ main.cpp -o exe && ./exe bebou.pgm seuil_var_split seuil_moy_merge (valeur de seuil pour voir l'evolution 50 150 500 1000)
+
+g++ main.cpp -o exe && ./exe 2.pgm 150 25
