@@ -10,34 +10,31 @@ layout(location = 2) in vec3 normals;
 
 //TODO create uniform transformations matrices Model View Projection
 // Matrice de transfo
-uniform mat4 transform_mat_plane;
-uniform mat4 view_mat;
-uniform mat4 project_mat;
-uniform mat4 transform_;
-uniform bool isMesh;
+
+
+uniform mat4 transform_GO;
+uniform int type;
+uniform float heightcoeff;
 //HeightMap qu'on récupère
 uniform sampler2D texture0;
 //Output vers fragmentshader
 out vec2 TexCoord; // Les coordonnées UV
 
-
 //out vec4 normals;
-
+uniform mat4 matv;
+uniform mat4 matp;
 void main(){
+
         vec3 pos = vertices_position_modelspace;
-        // TODO : Output position of the vertex, in clip space : MVP * position
-        
-        if(isMesh) // Si on a affaire a un mesh, c'est ça propre matrice de transformation qui est utilisé
-        {
-        gl_Position = project_mat * view_mat * transform_ * vec4(pos,1);        
-        }
-        else // Sinon, pour l'instant y'a que le plan donc on le traite comme un plan
+        TexCoord = textureCoordinates;
+        if(type == 1)
         {
         float height = texture(texture0,textureCoordinates).r;
-        pos.y += height;
-        gl_Position =view_mat * transform_mat_plane * vec4(pos,1);
-        TexCoord = textureCoordinates;
-        gl_Position = project_mat * gl_Position;
+        pos.y += height * heightcoeff;
+        gl_Position =matp * matv* transform_GO * vec4(pos,1);
         }
+        else
+        gl_Position = matp * matv *transform_GO *vec4(pos,1);
 }
+
 

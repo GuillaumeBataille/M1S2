@@ -1,10 +1,10 @@
 #ifndef FUNCTION_CPP
 #define FUNCTION_CPP
 
-#include "TP1/variable.cpp"
+#include "../TP1/variable.cpp"
 
 // Viser le centre du plan avec la camera en prenant le vertices 0 + last vertice / 2
-void targetCameraPlan(std::vector<glm::vec3> &indexed_vertices)
+/*void targetCameraPlans(std::vector<glm::vec3> &indexed_vertices)
 {
     glm::vec3 centroid(0.0f);
     for (const auto &vertex : indexed_vertices)
@@ -14,7 +14,7 @@ void targetCameraPlan(std::vector<glm::vec3> &indexed_vertices)
     centroid /= static_cast<float>(indexed_vertices.size());
 
     camera_target = centroid - camera_position;
-}
+}*/
 
 void initPlane(std::vector<unsigned short> &indices, std::vector<std::vector<unsigned short>> &triangles, std::vector<glm::vec3> &indexed_vertices, std::vector<glm::vec2> &uv, int resolution, int size, bool randomheight)
 {
@@ -67,6 +67,48 @@ void initPlane(std::vector<unsigned short> &indices, std::vector<std::vector<uns
     }
 }
 
+void create_sphere(std::vector<unsigned short> &indices, std::vector<glm::vec3> &indexed_vertices, float radius, int resolution)
+{
+    indices.clear();
+    indexed_vertices.clear();
+
+    for (int i = 0; i <= resolution; ++i)
+    {
+        float theta1 = M_PI * (i / (float)resolution);
+        float sin_theta1 = sin(theta1);
+        float cos_theta1 = cos(theta1);
+
+        for (int j = 0; j <= resolution; ++j)
+        {
+            float phi = 2 * M_PI * (j / (float)resolution);
+            float sin_phi = sin(phi);
+            float cos_phi = cos(phi);
+
+            glm::vec3 vertex = glm::vec3(cos_phi * sin_theta1, cos_theta1, sin_phi * sin_theta1);
+            indexed_vertices.push_back(vertex * radius);
+        }
+    }
+
+    int num_vertices = indexed_vertices.size();
+    for (int i = 0; i < resolution; ++i)
+    {
+        for (int j = 0; j < resolution; ++j)
+        {
+            int i1 = i * (resolution + 1) + j;
+            int i2 = i1 + 1;
+            int i3 = (i + 1) * (resolution + 1) + j;
+            int i4 = i3 + 1;
+
+            indices.push_back(i1);
+            indices.push_back(i3);
+            indices.push_back(i2);
+
+            indices.push_back(i2);
+            indices.push_back(i3);
+            indices.push_back(i4);
+        }
+    }
+};
 void sphericalMapping(std::vector<glm::vec3> &vertices, std::vector<glm::vec2> &uvs)
 {
     for (const auto &v : vertices)
@@ -111,4 +153,5 @@ void computeNormals(const std::vector<glm::vec3> &vertices, const std::vector<un
         normals[i] = glm::normalize(normals[i]);
     }
 }
+
 #endif

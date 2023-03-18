@@ -19,29 +19,70 @@ GLFWwindow *window;
 
 using namespace glm;
 
-#include <common/shader.hpp>
-#include <common/vboindexer.hpp>
+#include "../common/shader.hpp"
+#include "../common/vboindexer.hpp"
 
-#include <common/texture.hpp>
-#include "TP1/input.cpp"
-#include "TP1/function.cpp"
-
-#include "TP1/scenes.cpp"
+#include "../common/texture.hpp"
+#include "../TP1/input.cpp"
+#include "../TP1/function.cpp"
+#include "../TP1/scenes.cpp"
+#include "../TP1/Sphere.cpp"
+#include "../TP1/Mesh.cpp"
+#include "../TP1/Plane.cpp"
+#include "../TP1/camera.cpp"
 
 #include <vector>
 #include <string>
 #include <glm/glm.hpp>
 
+double lastX = 0.0, lastY = 0.0; // Position précédente de la souris
+bool firstMouse = true;          // Indicateur pour la première utilisation de la souris
+Camera camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+// Fonction de rappel pour la position de la souris
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+    // Si c'est la première fois que la souris est utilisée, initialiser les valeurs de position précédente
+    if (firstMouse)
+    {
+        // std::cout << "Mouse init - Xpos : " << xpos << " and Ypos : " << ypos << std::endl;
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    // Calculer le déplacement de la souris
+    double xoffset = xpos - lastX;
+    double yoffset = lastY - ypos; // La distance y est inversée
+    // Mettre à jour la position de la caméra en fonction du déplacement de la souris
+    // Ici, on ne fait que modifier l'angle de direction de la caméra, mais vous pouvez ajouter de la logique supplémentaire selon vos besoins
+    const float sensitivity = 0.05f;
+    // std::cout << "Mouse init - Xpos : " << xoffset * sensitivity << " and Ypos : " << yoffset * sensitivity << std::endl;
+    camera.processMouseMovement(xoffset * sensitivity, yoffset * sensitivity);
+    //  Réinitialiser la position précédente de la souris
+    lastX = xpos;
+    lastY = ypos;
+}
+
+// Définition de la fonction de rappel pour le scroll de la souris
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    camera.processMouseScroll(yoffset);
+}
+
 int main(void)
 {
+    //
 
-    // Initialise GLFW
+    // Root->GenerateBuffers();
+    //  Root->DeleteBuffers();
+    //   Initialise GLFW
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to initialize GLFW\n");
         getchar();
         return -1;
     }
+
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -49,7 +90,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(1024, 768, "TP1 - GLFW", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "MOTEUR DE JEU", NULL, NULL);
     if (window == NULL)
     {
         fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
@@ -68,195 +109,126 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-    // Ensure we can capture the escape key being pressed below
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    // Hide the mouse and enable unlimited mouvement
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    // Set up your mouse callback function
 
-    // Set the mouse at the center of the screen
-    glfwPollEvents();
-    glfwSetCursorPos(window, 1024 / 2, 768 / 2);
+    // Mode d'input
+    //  glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);         // Mode keyboard + mouse not use classique
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Mode capture de la souris
 
-    // Dark blue background
+    // Bind et Activation du shader global au programme
+    shaderProgram_ = LoadShaders("vertex_shader.glsl", "fragment_shader.glsl");
+    glUseProgram(shaderProgram_);
+    GLuint viewLoc = glGetUniformLocation(shaderProgram_, "Viewss");
+    GLuint projLoc = glGetUniformLocation(shaderProgram_, "Projects");
+    //---------------------------SCENE CONTENT---------------------------//
+    // Creating new GameObjects
+    GameObject *Root = new GameObject();
+    GameObject *Plane = new GO_Plane(50, 100);
+    GameObject *Sphere1 = new GO_Sphere(20, 2, 1);
+    GameObject *Sphere2 = new GO_Sphere(20, 1, 2);
+    GameObject *Sphere3 = new GO_Sphere(20, 1, 3);
+    // Binding the Hierarchy
+    Root->addChild(Plane);
+    Root->addChild(Sphere1);
+    Sphere1->addChild(Sphere2);
+    Sphere2->addChild(Sphere3);
+    // Apply the texture to all the program
+    Root->GO_Texture();
+
+    // Set of transformation that will generate a static scene
+    Plane->setColor(glm::vec4(1., 0.2, 0.2, 1));
+    Plane->translate(glm::vec3(0.2));
+    Root->scale(glm::vec3(0.5));
+    Sphere1->translate(glm::vec3(0., 10, 0.));
+    Sphere2->scale(glm::vec3(0.8));
+    Sphere2->translate(glm::vec3(0., 0, -10.));
+    Sphere3->scale(glm::vec3(0.5));
+    Sphere3->translate(glm::vec3(0., 0., -5.));
+
+    // glfwPollEvents(); // Créer une pool qui va gérer les events Glfw comme les inputs
+    //  glfwSetCursorPos(window, 1024 / 2, 768 / 2); // Mets a souris a une position particulière (pas use pour l'instant)
+
+    //-------------------------CAMERA-----------------------------//
+
+    // Background color
     glClearColor(0.8f, 0.8f, 0.8f, 0.0f);
 
-    // Enable depth test
+    // Enable depth test - Permet de faire une verification sur le visible/caché pour opti le rendu
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
+    // Dessine un pixel/fragment uniquement si c'est le plus proche de la cam
     glDepthFunc(GL_LESS);
-
-    // Cull triangles which normal is not towards the camera
-    // glEnable(GL_CULL_FACE);
-
-    GLuint VertexArrayID;
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
-    GLuint vertexbuffer;
-    GLuint uvbuffer;
-    GLuint elementbuffer;
-    GLuint normalbuffer;
-    GLuint tangentbuffer;
-    GLuint bitangentbuffer;
-
-    // Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders("vertex_shader.glsl", "fragment_shader.glsl");
-    glUseProgram(programID);
-
-    //---------------------Loading textures and heightmap --------------------//
-
-    glActiveTexture(GL_TEXTURE0);
-
-    // loadTexture("../textures/png/HMok.bmp");
-    loadTexture("../textures/HM4.bmp");
-    // loadBMP_custom("../textures/HM1.bmp");
-    // loadBMP_custom("../textures/HM3.bmp");
-    glUniform1i(glGetUniformLocation(programID, "texture0"), 0);
-
-    glActiveTexture(GL_TEXTURE1);
-    loadTexture("../textures/grass.bmp");
-    glUniform1i(glGetUniformLocation(programID, "texture1"), 1);
-
-    glActiveTexture(GL_TEXTURE2);
-    loadTexture("../textures/rock.bmp");
-    glUniform1i(glGetUniformLocation(programID, "texture2"), 2);
-
-    glActiveTexture(GL_TEXTURE3);
-    loadTexture("../textures/snowrock.bmp");
-    glUniform1i(glGetUniformLocation(programID, "texture3"), 3);
-
-    // Créer mes buffers
-
-    glGenBuffers(1, &vertexbuffer);
-    glGenBuffers(1, &uvbuffer);
-    glGenBuffers(1, &elementbuffer);
-    glGenBuffers(1, &normalbuffer);
-
-    // Get a handle for our "LightPosition" uniform
-    GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
     // For speed computation
     double lastTime = glfwGetTime();
     int nbFrames = 0;
-
+    double accumulator = 0.;
+    char titre[50]; // Pour l'affichage au dessus
     do
     {
-        // std::cout<<"current resolution : "<< resolution << std::endl;
-        // glfwSetCursorPosCallback(window, mouseCallback);
-        //  Measure speed
-        //  per-frame time logic
-        //  --------------------
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-        // input
-        // -----
-        processInput(window);
+
+        nbFrames++;
+        accumulator += deltaTime;
+
+        if (accumulator >= 1) // A chaque seconde
+        {
+            float fps = nbFrames / accumulator;
+            sprintf(titre, "MOTEUR DE JEU - (%.1f FPS)", fps); // Formatage du titre avec les FPS
+            glfwSetWindowTitle(window, titre);                 // Mise à jour du titre de la fenêtre
+            nbFrames = 0;
+            accumulator = 0.;
+        }
+
+        // INPUT
+        camera.sendToShader(shaderProgram_);
+        if (glfwGetKey(window, FORWARD) == GLFW_PRESS)
+            camera.processKeyboard(FORWARD, deltaTime);
+        if (glfwGetKey(window, BACKWARD) == GLFW_PRESS)
+            camera.processKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window, LEFT) == GLFW_PRESS)
+            camera.processKeyboard(LEFT, deltaTime);
+        if (glfwGetKey(window, RIGHT) == GLFW_PRESS)
+            camera.processKeyboard(RIGHT, deltaTime);
+
+        processInput(window, camera);
 
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Use our shader
-        glUseProgram(programID);
-        // Update scene
-        generateS1()->draw();
+        // Ani Animated stuff
+        Sphere1->rotate((0.1 * deltaTime), glm::vec3(0., 1, 0.));
+        Sphere2->rotate((0.4 * deltaTime), glm::vec3(0., 1, 0.));
 
-        // Compute le necessaire pour avoir de quoi charger les buffers
-        initPlane(indices, triangles, indexed_vertices, uv, resolution, SIZE, randomheight); // Initiation du plan
-        computeNormals(indexed_vertices, indices, normals);
-        computeUV(uv, resolution);
-        targetCameraPlan(indexed_vertices);
+        // Draw a scene
+        Root->draw();
 
-        // loadOFF("../TP1/suzanne.off",indexed_vertices,indices);
-        // Envoi des matrices MVP (ici TVP)
-        //  Model matrix : an identity matrix (model will be at the origin) then change
-        GLuint id_t_Plane = glGetUniformLocation(programID, "transform_mat_plane");
-        GLuint id_t_Mesh = glGetUniformLocation(programID, "transform_mat_mesh");
-        glUniformMatrix4fv(id_t_Plane, 1, false, &mat_t[0][0]);
-        glUniformMatrix4fv(id_t_Mesh, 1, false, &mat_t_m[0][0]);
-        // View matrix : camera/view transformation lookat() utiliser camera_position camera_target camera_up
-        mat_v = glm::lookAt(camera_position, camera_target, camera_up);
-        GLuint id_v = glGetUniformLocation(programID, "view_mat");
-        glUniformMatrix4fv(id_v, 1, false, &mat_v[0][0]);
-        // Projection matrix : 45 Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-        mat_p = glm::perspective(glm::radians(45.0f), (float)4 / (float)3, 0.1f, 100.0f);
-        GLuint id_p = glGetUniformLocation(programID, "project_mat");
-        glUniformMatrix4fv(id_p, 1, false, &mat_p[0][0]);
-        GLint isMeshLoc = glGetUniformLocation(programID, "isMesh");
-        glUniform1i(isMeshLoc, false); // Use planet's transformation matrix
-
-        // On bind, charge et envoie le contenu du vertexbuffer dans le layout 0
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(glm::vec3), &indexed_vertices[0], GL_STATIC_DRAW);
-        glVertexAttribPointer(
-            0,        // attribute
-            3,        // size
-            GL_FLOAT, // type
-            GL_FALSE, // normalized?
-            0,        // stride
-            (void *)0 // array buffer offset
-        );
-        glEnableVertexAttribArray(0); // Activer le layout
-
-        // On bind, charge et envoie le contenu de l'uvbuffer (pour les textures/heightmap) dans le layout 1
-        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-        glBufferData(GL_ARRAY_BUFFER, uv.size() * sizeof(glm::vec2), &uv[0], GL_STATIC_DRAW);
-        glVertexAttribPointer(
-            1,        // attribute (layout)
-            2,        // size
-            GL_FLOAT, // type
-            GL_FALSE, // normalized?
-            0,        // stride
-            (void *)0 // array buffer offset
-        );
-        glEnableVertexAttribArray(1); // Activer le layout
-
-        // On bind, charge et envoie le contenu du normalbuffer dans le layout 2
-        glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-        glVertexAttribPointer(
-            2,        // attribute
-            3,        // size
-            GL_FLOAT, // type
-            GL_FALSE, // normalized?
-            0,        // stride
-            (void *)0 // array buffer offset
-        );
-        glEnableVertexAttribArray(2); // Activer le layout
-
-        // Bind puis Envoi des indices des triangles pour draw les elements
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0], GL_STATIC_DRAW);
-        // Draw the triangles !
-        glDrawElements(
-            GL_TRIANGLES,      // mode
-            indices.size(),    // count
-            GL_UNSIGNED_SHORT, // type
-            (void *)0          // element array buffer offset
-        );
-
-        // Desactiver les layouts après avoir dessiner
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
-
-        // Swap buffers
         glfwSwapBuffers(window);
+        // Récupérer la position actuelle de la souris
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+
+        // Définir la fonction de rappel pour la position de la souris
+        glfwSetCursorPosCallback(window, mouse_callback);
+        // Ajout de la fonction de rappel à la fenêtre GLFW
+        glfwSetScrollCallback(window, scroll_callback);
+        // Obtention des matrices de vue et de projection
+
+        // Traiter les événements de la fenêtre
         glfwPollEvents();
+
+        // mat_v = glm::lookAt(camera_position, camera_position + camera_target, camera_up);
 
     } // Check if the ESC key was pressed or the window was closed
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
            glfwWindowShouldClose(window) == 0);
 
     // Cleanup VBO and shader
-    glDeleteBuffers(1, &vertexbuffer);
-    glDeleteBuffers(1, &uvbuffer);
-    glDeleteBuffers(1, &normalbuffer);
-    glDeleteBuffers(1, &elementbuffer);
-    glDeleteProgram(programID);
-    glDeleteVertexArrays(1, &VertexArrayID);
-
-    // Close OpenGL window and terminate GLFW
+    glDeleteProgram(shaderProgram_);
+    Root->DeleteBuffers();
+    //  Close OpenGL window and terminate GLFW
     glfwTerminate();
 
     return 0;

@@ -12,10 +12,10 @@
 
 // Include GLFW
 #include <GLFW/glfw3.h>
-#include <common/objloader.hpp>
+#include "../common/objloader.hpp"
 #include <glm/gtc/matrix_transform.hpp>
-#include <common/shader.hpp>
-#include "common/my_texture.cpp"
+#include "../common/shader.hpp"
+#include "../common/my_texture.cpp"
 
 class Mesh
 {

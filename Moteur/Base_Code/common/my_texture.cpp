@@ -1,11 +1,11 @@
 #define STB_IMAGE_IMPLEMENTATION
-#include "common/stb_image.h"
+#include "../common/stb_image.h"
 #include <GL/glew.h>
 
 GLuint loadTexture(const char *path)
 {
     printf("Reading image %s\n", path);
-    // Data read from the header of the image file
+    //  Data read from the header of the image file
     int width, height, numChannels;
     unsigned char *data = stbi_load(path, &width, &height, &numChannels, 0);
 

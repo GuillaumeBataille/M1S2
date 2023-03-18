@@ -1,8 +1,8 @@
-#include "TP1/function.cpp"
+#include "../TP1/function.cpp"
 
 Mesh *generateS1()
 {
-    std::cout << "add " << std::endl;
+
     // Set rotation and orbit speeds
     float sunRotationSpeed = 0.1f;
     float earthRotationSpeed = 0.6f;
