@@ -4,6 +4,7 @@
 // Ouput data
 out vec4 color;
 in vec2 TexCoord;
+in vec3 TexDirCube;
 
 uniform sampler2D texture0;
 uniform sampler2D texture1;
@@ -12,7 +13,8 @@ uniform sampler2D texture3;
 uniform sampler2D texture4;
 uniform sampler2D texture5;
 uniform sampler2D texture6;
-
+uniform samplerCube texture7;
+uniform samplerCube texture8;
 //
 uniform vec4 color_GO;
 uniform int type;
@@ -62,9 +64,19 @@ if(type == 3)//Sphere
     spheretex = texture(texture6,TexCoord);
 
     color = spheretex;
+}
 
+if(type==4)
+{   
+    vec4 cubetex;
+    if(Texid==0)
+    cubetex = color_GO;
+    if(Texid==1)
+    cubetex=texture(texture7,TexDirCube);
+    if(Texid==2)
+    cubetex=texture(texture8,TexDirCube);
 
-
+    color = cubetex;
 }
 
 }

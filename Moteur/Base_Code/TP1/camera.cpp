@@ -38,7 +38,6 @@ public:
 
     void processKeyboard(int direction, float deltaTime)
     {
-        // std::cout << "DIRECTION :" << direction << std::endl;
         float velocity = movementSpeed * deltaTime;
         if (direction == FORWARD)
             position += front * velocity;
@@ -69,10 +68,6 @@ public:
         }
 
         updateCameraVectors();
-
-        // Debug output
-        // std::cout << "Offset x " << yoffset << "Camera position: " << position.x << ", " << position.y << ", " << position.z << std::endl;
-        // std::cout << "Camera yaw: " << yaw << ", pitch: " << pitch << std::endl;
     }
 
     void processMouseScroll(float yoffset)
@@ -88,23 +83,35 @@ public:
     {
         glm::mat4 view = getViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "matv"), 1, false, &(view[0][0]));
+        view_static = glm::mat4(glm::mat3(getViewMatrix()));
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "matv_static"), 1, false, &(view_static[0][0]));
+
         glm::mat4 projection = glm::perspective(glm::radians(zoom), (float)4 / (float)3, 0.1f, 100.0f);
         glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "matp"), 1, false, &(projection[0][0]));
     }
+    void setPosition(glm::vec3 newposition)
+    {
+        this->position = newposition;
+    }
 
-private:
-    glm::vec3 position;
-    glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 up;
-    glm::vec3 right;
-    glm::vec3 worldUp;
+    void setFront(glm::vec3 newfront)
+    {
+        this->front = newfront;
+    }
 
-    float yaw;
-    float pitch;
+    void setUp(glm::vec3 newup)
+    {
+        this->up = newup;
+    }
+    glm::vec3 getPosition()
+    {
+        return this->position;
+    }
 
-    float movementSpeed;
-    float mouseSensitivity;
-    float zoom;
+    glm::vec3 getFront()
+    {
+        return this->front;
+    }
 
     void updateCameraVectors()
     {
@@ -118,7 +125,22 @@ private:
         up = glm::normalize(glm::cross(right, front));
     }
 
-    const float SPEED = 2.5f;
+private:
+    glm::vec3 position;
+    glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up;
+    glm::vec3 right;
+    glm::vec3 worldUp;
+    glm::mat4 view_static;
+
+    float yaw;
+    float pitch;
+
+    float movementSpeed;
+    float mouseSensitivity;
+    float zoom;
+
+    const float SPEED = 10.5f;
     const float SENSITIVITY = 0.1f;
     const float ZOOM = 45.0f;
     const int FORWARD = GLFW_KEY_W;

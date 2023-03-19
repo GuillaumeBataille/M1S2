@@ -20,15 +20,17 @@ public:
         create_sphere(indices_, vertices_, size, resolution);
         // Compute les UV du plan
         computeUV(uvs_, res);
-        // Generer et charger les buffers
+
+        //  Generer et charger les buffers
         this->GenerateBuffers();
     }
 
     virtual void draw() const
     {
+        // Envoi du texid pour appliquer la bonne texture de la sphère
         GLuint TexidLoc = glGetUniformLocation(shaderProgram_, "Texid");
         glUniform1i(TexidLoc, textureSphereid);
-        GameObject::draw();
+        GameObject::draw(); // call super draw
     };
 };
 #endif

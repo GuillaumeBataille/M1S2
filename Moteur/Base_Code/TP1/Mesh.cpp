@@ -6,6 +6,7 @@ class GO_Mesh : public GameObject
 {
 public:
     // Constructeur de GO_Plane
+    // TODO - Voir comment integrer le loaderOBJ aussi mais faire en sorte qu'il remplit aussi vertices et indices (triangle osef)
     GO_Mesh(const std::string &filename)
     {
         this->type = 2;

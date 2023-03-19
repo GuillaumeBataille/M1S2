@@ -70,6 +70,11 @@ CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtc/constants.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtc/constants.inl
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtc/matrix_transform.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtc/matrix_transform.inl
+CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtc/quaternion.hpp
+CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtx/norm.hpp
+CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtx/norm.inl
+CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtx/quaternion.hpp
+CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/gtx/quaternion.inl
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/integer.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/mat2x2.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/mat2x3.hpp
@@ -87,6 +92,7 @@ CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/vec2.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/vec3.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/vec4.hpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../external/glm-0.9.7.1/glm/vector_relational.hpp
+CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/Cube.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/Mesh.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/Plane.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/Sphere.cpp
@@ -95,8 +101,6 @@ CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/camera.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/function.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/gameobject.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/input.cpp
-CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/mesh.cpp
-CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/scenes.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../TP1/variable.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../common/my_texture.cpp
 CMakeFiles/TP1.dir/TP1/TP1.cpp.o: ../common/objloader.hpp

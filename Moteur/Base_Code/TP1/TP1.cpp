@@ -25,56 +25,19 @@ using namespace glm;
 #include "../common/texture.hpp"
 #include "../TP1/input.cpp"
 #include "../TP1/function.cpp"
-#include "../TP1/scenes.cpp"
 #include "../TP1/Sphere.cpp"
 #include "../TP1/Mesh.cpp"
 #include "../TP1/Plane.cpp"
+#include "../TP1/Cube.cpp"
 #include "../TP1/camera.cpp"
 
 #include <vector>
 #include <string>
 #include <glm/glm.hpp>
 
-double lastX = 0.0, lastY = 0.0; // Position précédente de la souris
-bool firstMouse = true;          // Indicateur pour la première utilisation de la souris
-Camera camera(glm::vec3(0.0f, 10.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-// Fonction de rappel pour la position de la souris
-void mouse_callback(GLFWwindow *window, double xpos, double ypos)
-{
-    // Si c'est la première fois que la souris est utilisée, initialiser les valeurs de position précédente
-    if (firstMouse)
-    {
-        // std::cout << "Mouse init - Xpos : " << xpos << " and Ypos : " << ypos << std::endl;
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    // Calculer le déplacement de la souris
-    double xoffset = xpos - lastX;
-    double yoffset = lastY - ypos; // La distance y est inversée
-    // Mettre à jour la position de la caméra en fonction du déplacement de la souris
-    // Ici, on ne fait que modifier l'angle de direction de la caméra, mais vous pouvez ajouter de la logique supplémentaire selon vos besoins
-    const float sensitivity = 0.05f;
-    // std::cout << "Mouse init - Xpos : " << xoffset * sensitivity << " and Ypos : " << yoffset * sensitivity << std::endl;
-    camera.processMouseMovement(xoffset * sensitivity, yoffset * sensitivity);
-    //  Réinitialiser la position précédente de la souris
-    lastX = xpos;
-    lastY = ypos;
-}
-
-// Définition de la fonction de rappel pour le scroll de la souris
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
-{
-    camera.processMouseScroll(yoffset);
-}
-
 int main(void)
 {
-    //
 
-    // Root->GenerateBuffers();
-    //  Root->DeleteBuffers();
     //   Initialise GLFW
     if (!glfwInit())
     {
@@ -117,35 +80,38 @@ int main(void)
     // Bind et Activation du shader global au programme
     shaderProgram_ = LoadShaders("vertex_shader.glsl", "fragment_shader.glsl");
     glUseProgram(shaderProgram_);
-    GLuint viewLoc = glGetUniformLocation(shaderProgram_, "Viewss");
-    GLuint projLoc = glGetUniformLocation(shaderProgram_, "Projects");
+
     //---------------------------SCENE CONTENT---------------------------//
     // Creating new GameObjects
+    // Note pour le dernier argument
+    // Pour sphere : Rien (0) = Couleur de la sphere - 1 = Texsoleil - 2 = TexTerre - 3 = TexMoon
+    // Pour Cube : Rien(0) = Couleur du cube -  1 = TexSkybox - 2 = TexMinecraftDiamond
     GameObject *Root = new GameObject();
-    GameObject *Plane = new GO_Plane(50, 100);
+    GameObject *Plane = new GO_Plane(50, 100); // Resolution , Taille du plan
     GameObject *Sphere1 = new GO_Sphere(20, 2, 1);
     GameObject *Sphere2 = new GO_Sphere(20, 1, 2);
     GameObject *Sphere3 = new GO_Sphere(20, 1, 3);
+    GameObject *Cube1 = new GO_Cube(100, 1);
+    GameObject *CubetoSlide = new GO_Cube(3, 2);
     // Binding the Hierarchy
     Root->addChild(Plane);
     Root->addChild(Sphere1);
+    Root->addChild(CubetoSlide);
     Sphere1->addChild(Sphere2);
     Sphere2->addChild(Sphere3);
+    Root->addChild(Cube1);
     // Apply the texture to all the program
     Root->GO_Texture();
 
     // Set of transformation that will generate a static scene
     Plane->setColor(glm::vec4(1., 0.2, 0.2, 1));
-    Plane->translate(glm::vec3(0.2));
-    Root->scale(glm::vec3(0.5));
+    // Root->scale(glm::vec3(0.5));
     Sphere1->translate(glm::vec3(0., 10, 0.));
     Sphere2->scale(glm::vec3(0.8));
     Sphere2->translate(glm::vec3(0., 0, -10.));
     Sphere3->scale(glm::vec3(0.5));
     Sphere3->translate(glm::vec3(0., 0., -5.));
-
-    // glfwPollEvents(); // Créer une pool qui va gérer les events Glfw comme les inputs
-    //  glfwSetCursorPos(window, 1024 / 2, 768 / 2); // Mets a souris a une position particulière (pas use pour l'instant)
+    CubetoSlide->translate(glm::vec3(1));
 
     //-------------------------CAMERA-----------------------------//
 
@@ -156,9 +122,9 @@ int main(void)
     glEnable(GL_DEPTH_TEST);
     // Accept fragment if it closer to the camera than the former one
     // Dessine un pixel/fragment uniquement si c'est le plus proche de la cam
-    glDepthFunc(GL_LESS);
-
-    // For speed computation
+    // glDepthFunc(GL_LESS); Less de base
+    glDepthFunc(GL_LEQUAL); // Mais on utilise une skybox donc LEQUAL
+    //  For speed computation
     double lastTime = glfwGetTime();
     int nbFrames = 0;
     double accumulator = 0.;
@@ -182,54 +148,54 @@ int main(void)
             accumulator = 0.;
         }
 
-        // INPUT
+        // Envoyer V et P au shader
         camera.sendToShader(shaderProgram_);
-        if (glfwGetKey(window, FORWARD) == GLFW_PRESS)
-            camera.processKeyboard(FORWARD, deltaTime);
-        if (glfwGetKey(window, BACKWARD) == GLFW_PRESS)
-            camera.processKeyboard(BACKWARD, deltaTime);
-        if (glfwGetKey(window, LEFT) == GLFW_PRESS)
-            camera.processKeyboard(LEFT, deltaTime);
-        if (glfwGetKey(window, RIGHT) == GLFW_PRESS)
-            camera.processKeyboard(RIGHT, deltaTime);
 
-        processInput(window, camera);
+        // INPUT
+        processInput(window, Plane);
 
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Ani Animated stuff
-        Sphere1->rotate((0.1 * deltaTime), glm::vec3(0., 1, 0.));
-        Sphere2->rotate((0.4 * deltaTime), glm::vec3(0., 1, 0.));
+        Sphere1->rotate((0.1 * deltaTime), glm::vec3(0., 1, 0.)); // Soleil rotate
+        Sphere2->rotate((0.4 * deltaTime), glm::vec3(0., 1, 0.)); // Terre rotate
 
-        // Draw a scene
-        Root->draw();
+        CubetoSlide->translate(glm::vec3(0., 0., deltaTime)); // Translate du diamond bloc pour le TP
+
+        //-------- Compute crado pour l'instant pour que le cube slide sur le terrain heightmapped
+        glm::vec3 cubepos = CubetoSlide->getPos(); // Recupère la position courante du cube (bas gauche)
+        glm::vec2 uv = calculateUV(cubepos, Plane->vertices_[0], Plane->vertices_[Plane->vertices_.size() - 1]);
+        // Appliquer les uv dans la heightmap pour retrouver la hauteur de la ou est le cube
+        float height = getGrayLevel(data, width, heights, uv[0], uv[1]);
+        CubetoSlide->translate(glm::vec3(0., height - cubepos[1], 0.)); // Le translate pour recalibrer l'objet en y
+        // DRAW SCENE///
+        Root->draw(); //
+        //------------//
 
         glfwSwapBuffers(window);
+
+        //--------- Gestion du mode immersif avec souris pour bouger la cam
         // Récupérer la position actuelle de la souris
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-
         // Définir la fonction de rappel pour la position de la souris
-        glfwSetCursorPosCallback(window, mouse_callback);
+        glfwSetCursorPosCallback(window, mouse_callback); // Defini dans input
         // Ajout de la fonction de rappel à la fenêtre GLFW
-        glfwSetScrollCallback(window, scroll_callback);
+        glfwSetScrollCallback(window, scroll_callback); // Defini dans input
         // Obtention des matrices de vue et de projection
+        //-------------
 
         // Traiter les événements de la fenêtre
         glfwPollEvents();
 
-        // mat_v = glm::lookAt(camera_position, camera_position + camera_target, camera_up);
-
     } // Check if the ESC key was pressed or the window was closed
-    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0);
+    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 
     // Cleanup VBO and shader
     glDeleteProgram(shaderProgram_);
     Root->DeleteBuffers();
     //  Close OpenGL window and terminate GLFW
     glfwTerminate();
-
     return 0;
 }
